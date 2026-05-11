@@ -1,0 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-bakery-pink-50: #fff1f2;
+  --color-bakery-pink-100: #ffe4e6;
+  --color-bakery-pink-200: #fecdd3;
+  --color-bakery-pink-300: #fda4af;
+  --color-bakery-pink-400: #fb7185;
+  --color-bakery-pink-500: #f43f5e;
+  --color-bakery-pink-600: #e11d48;
+
+  --color-bakery-cream-50: #fffcf2;
+  --color-bakery-cream-100: #fff9e6;
+  --color-bakery-cream-200: #fff3cc;
+  --color-bakery-cream-300: #ffedb3;
+  --color-bakery-cream-400: #ffe799;
+  --color-bakery-cream-500: #ffe180;
+
+  --color-bakery-chocolate: #3d2b1f;
+  --color-bakery-chocolate-50: #f7f4f2;
+  --color-bakery-chocolate-100: #efeae6;
+  --color-bakery-chocolate-200: #dfd3cc;
+  --color-bakery-chocolate-300: #bfab99;
+  --color-bakery-chocolate-400: #9f8366;
+  --color-bakery-chocolate-500: #7f5b33;
+  --color-bakery-chocolate-600: #664929;
+  --color-bakery-chocolate-700: #4d371f;
+  --color-bakery-chocolate-800: #332514;
+  --color-bakery-chocolate-900: #1a120a;
+
+  --color-bakery-gold-50: #f9f7f0;
+  --color-bakery-gold-100: #f3eed1;
+  --color-bakery-gold-200: #e7dda3;
+  --color-bakery-gold-300: #dbcc75;
+  --color-bakery-gold-400: #cfbb47;
+  --color-bakery-gold-500: #c3aa19;
+  --color-bakery-gold: #c5a059;
+
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Outfit", sans-serif;
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-delayed: float 6s ease-in-out infinite 2s;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+}
+
+@utility btn-premium {
+  @apply relative overflow-hidden px-8 py-3 rounded-full font-semibold transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+@layer base {
+  body {
+    @apply bg-bakery-cream-50 text-bakery-chocolate font-sans antialiased pb-20 md:pb-0;
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/30 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+  
+  .glass-dark {
+    @apply bg-bakery-chocolate/10 backdrop-blur-md border border-white/10 shadow-lg;
+  }
+
+  .btn-primary {
+    @apply btn-premium bg-gradient-to-r from-bakery-pink-400 to-bakery-pink-500 text-white shadow-lg shadow-bakery-pink-200 hover:shadow-bakery-pink-300 hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply btn-premium bg-white text-bakery-chocolate border border-bakery-pink-100 hover:bg-bakery-pink-50 hover:border-bakery-pink-200;
+  }
+
+  .card-hover {
+    @apply transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-bakery-chocolate to-bakery-pink-600;
+  }
+}
+
+/* Custom Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.parallax {
+  perspective: 1px;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.parallax__layer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.parallax__layer--base {
+  transform: translateZ(0);
+}
+
+.parallax__layer--back {
+  transform: translateZ(-1px) scale(2);
+}
