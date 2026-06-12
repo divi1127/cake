@@ -1,30 +1,31 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Mail, Lock, ArrowRight, LogIn } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, LogIn, Phone, Calendar, Eye, EyeOff } from 'lucide-react';
 
 export default function Register() {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', phone: '', birthday: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
+  const handleRegister = (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (data.message) {
-        alert('Registration successful! Please login.');
-        navigate('/login');
-      } else {
-        alert(data.error || 'Registration failed');
-      }
-    } catch (err) {
-      alert('Server error. Make sure backend is running.');
+    
+    const users = JSON.parse(localStorage.getItem('bakery_all_users') || '[]');
+    if (users.find(u => u.email === formData.email)) {
+      alert('Email already registered! Please login.');
+      return;
     }
+
+    const newUser = {
+      id: Date.now(),
+      ...formData,
+      role: 'user'
+    };
+
+    localStorage.setItem('bakery_all_users', JSON.stringify([...users, newUser]));
+    alert('Registration successful! Please login.');
+    navigate('/login');
   };
 
   return (
@@ -75,12 +76,47 @@ export default function Register() {
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-bakery-chocolate/30" size={18} />
               <input 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
                 placeholder="••••••••" 
+                className="w-full bg-bakery-cream-50 border border-bakery-pink-100 rounded-xl py-3 pl-12 pr-12 focus:outline-none focus:border-bakery-pink-400" 
+                required
+              />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-bakery-chocolate/30 hover:text-bakery-chocolate/60 transition-colors focus:outline-none"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-bakery-chocolate/70">WhatsApp Number</label>
+            <div className="relative">
+              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-bakery-chocolate/30" size={18} />
+              <input 
+                type="tel" 
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                placeholder="+91 00000 00000" 
                 className="w-full bg-bakery-cream-50 border border-bakery-pink-100 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-bakery-pink-400" 
                 required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-bakery-chocolate/70">Birthday (Optional)</label>
+            <div className="relative">
+              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-bakery-chocolate/30" size={18} />
+              <input 
+                type="date" 
+                value={formData.birthday}
+                onChange={(e) => setFormData({...formData, birthday: e.target.value})}
+                className="w-full bg-bakery-cream-50 border border-bakery-pink-100 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-bakery-pink-400" 
               />
             </div>
           </div>
@@ -100,3 +136,4 @@ export default function Register() {
     </div>
   );
 }
+

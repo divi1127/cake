@@ -33,9 +33,25 @@ export default function Footer() {
           <div>
             <h3 className="font-serif text-xl font-bold mb-6">Quick Links</h3>
             <ul className="space-y-4 text-white/70">
-              {['Home', 'Categories', 'Custom Cakes', 'About Us', 'Contact'].map((item) => (
-                <li key={item}>
-                  <Link to="/" className="hover:text-bakery-pink-300 transition-colors">{item}</Link>
+              {[
+                { name: 'Home', path: '/' },
+                { name: 'Categories', path: '/categories' },
+                { name: 'Custom Cakes', path: '/custom-preorder' },
+                { name: 'About Us', path: '/about' },
+                { name: 'Contact', path: '/about' },
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link 
+                    to={link.path} 
+                    onClick={() => {
+                      if (window.location.pathname === link.path) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
+                    className="hover:text-bakery-pink-300 transition-colors"
+                  >
+                    {link.name}
+                  </Link>
                 </li>
               ))}
             </ul>

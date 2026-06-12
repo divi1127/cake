@@ -10,10 +10,9 @@ const fs = require('fs');
 
 dotenv.config();
 
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const app = require('./app');
+const whatsappService = require('./services/whatsappService');
+const cronJobs = require('./cron/cronJobs');
 
 // Ensure uploads directory exists
 if (!fs.existsSync('./uploads')) {
@@ -113,6 +112,38 @@ connection.connect((err) => {
                     price DECIMAL(10, 2),
                     weight VARCHAR(50),
                     FOREIGN KEY (order_id) REFERENCES orders(id)
+                )`,
+                `CREATE TABLE IF NOT EXISTS carts (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id INT NULL,
+                    customer_name VARCHAR(255) NULL,
+                    phone VARCHAR(20) NOT NULL,
+                    items TEXT NOT NULL,
+                    total_amount DECIMAL(10, 2) DEFAULT 0.00,
+                    is_abandoned TINYINT DEFAULT 1,
+                    reminder_sent TINYINT DEFAULT 0,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )`,
+                `CREATE TABLE IF NOT EXISTS campaigns (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    type ENUM('festival', 'weekend', 'coupon', 'birthday') NOT NULL,
+                    message VARCHAR(1000) NOT NULL,
+                    template_name VARCHAR(100) DEFAULT 'hello_world',
+                    scheduled_time DATETIME NULL,
+                    status ENUM('draft', 'scheduled', 'sent', 'failed') DEFAULT 'draft',
+                    sent_count INT DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )`,
+                `CREATE TABLE IF NOT EXISTS whatsapp_logs (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    recipient_phone VARCHAR(20) NOT NULL,
+                    message_type VARCHAR(100) NOT NULL,
+                    template_name VARCHAR(100) NOT NULL,
+                    status ENUM('sent', 'failed') DEFAULT 'sent',
+                    error_message TEXT DEFAULT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )`
             ];
 
@@ -127,14 +158,21 @@ connection.connect((err) => {
             addColumnIfMissing('products', 'image_url', 'VARCHAR(255)');
             addColumnIfMissing('products', 'flavor', 'VARCHAR(100)');
             addColumnIfMissing('products', 'type', 'VARCHAR(100)');
+            addColumnIfMissing('users', 'phone', 'VARCHAR(20) NULL AFTER email');
+            addColumnIfMissing('users', 'birthday', 'DATE NULL AFTER phone');
 
             // Seeders
             const seedAdmin = async () => {
                 const adminEmail = 'admin@bakery.com';
+                const hashedPassword = await bcrypt.hash('admin123', 10);
                 connection.query('SELECT * FROM users WHERE email = ?', [adminEmail], async (err, results) => {
-                    if (err || results.length > 0) return;
-                    const hashedPassword = await bcrypt.hash('admin123', 10);
-                    connection.query('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', ['System Admin', adminEmail, hashedPassword, 'admin']);
+                    if (err) return;
+                    if (results.length > 0) {
+                        // Ensure password is reset to 'admin123' to prevent mismatches
+                        connection.query('UPDATE users SET password = ? WHERE email = ?', [hashedPassword, adminEmail]);
+                    } else {
+                        connection.query('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', ['System Admin', adminEmail, hashedPassword, 'admin']);
+                    }
                 });
             };
 
@@ -172,32 +210,74 @@ connection.connect((err) => {
             seedAdmin();
             seedCategories();
             console.log('Database initialized');
+
+            // Initialize automated crons
+            cronJobs.initCronJobs();
         });
     });
 });
 
+
 // --- ROUTES ---
 
 app.post('/api/auth/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, phone, birthday } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    connection.query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hashedPassword], (err) => {
-        if (err) return res.status(400).json({ error: 'Email already exists' });
-        res.json({ message: 'Success' });
-    });
+    connection.query(
+        'INSERT INTO users (name, email, password, phone, birthday) VALUES (?, ?, ?, ?, ?)', 
+        [name, email, hashedPassword, phone || null, birthday || null], 
+        (err) => {
+            if (err) {
+                console.error('Registration error:', err);
+                return res.status(400).json({ error: 'Email already exists' });
+            }
+            // Trigger automatic Customer Welcome Message!
+            if (phone) {
+                whatsappService.sendWelcomeMessage(phone, name);
+            }
+            res.json({ message: 'Success' });
+        }
+    );
 });
 
 app.post('/api/auth/login', (req, res) => {
     const { email, password } = req.body;
+    console.log(`[Login] Attempting login for email: "${email}"`);
+    
     connection.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
-        if (err || results.length === 0) return res.status(401).json({ error: 'Invalid' });
+        if (err) {
+            console.error('[Login] DB Error:', err);
+            return res.status(401).json({ error: 'Invalid' });
+        }
+        if (results.length === 0) {
+            console.log(`[Login] Failure: No user found with email: "${email}"`);
+            return res.status(401).json({ error: 'Invalid' });
+        }
+        
         const user = results[0];
-        if (await bcrypt.compare(password, user.password)) {
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        
+        if (isPasswordMatch) {
+            console.log(`[Login] Success: User "${user.email}" (${user.role}) logged in successfully.`);
             const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET);
-            res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
-        } else res.status(401).json({ error: 'Invalid' });
+            res.json({ 
+                token, 
+                user: { 
+                    id: user.id, 
+                    name: user.name, 
+                    email: user.email, 
+                    role: user.role,
+                    phone: user.phone,
+                    birthday: user.birthday
+                } 
+            });
+        } else {
+            console.log(`[Login] Failure: Password mismatch for email: "${email}"`);
+            res.status(401).json({ error: 'Invalid' });
+        }
     });
 });
+
 
 app.get('/api/categories', (req, res) => {
     connection.query('SELECT * FROM categories', (err, results) => {
@@ -235,10 +315,17 @@ app.post('/api/orders', (req, res) => {
         const orderId = result.insertId;
         const itemValues = items.map(item => [orderId, item.name || item.product_name, item.quantity, item.price, item.weight || '1 KG']);
         connection.query('INSERT INTO order_items (order_id, product_name, quantity, price, weight) VALUES ?', [itemValues], (err) => {
+            if (!err) {
+                // Fulfill Feature 2 (Order Confirmation Automation)
+                whatsappService.sendOrderConfirmation(phone, orderId, items, total_amount, address);
+                // Mark the cart as purchased (no longer abandoned)
+                connection.query('UPDATE carts SET is_abandoned = 0 WHERE phone = ? AND is_abandoned = 1', [phone]);
+            }
             res.json({ success: true, orderId });
         });
     });
 });
+
 
 app.put('/api/orders/:id/receive', (req, res) => {
     connection.query('UPDATE orders SET status = "delivered" WHERE id = ?', [req.params.id], (err) => {
@@ -297,9 +384,21 @@ app.post('/api/admin/products', authAdmin, upload.single('image'), (req, res) =>
 });
 
 app.put('/api/admin/orders/:id', authAdmin, (req, res) => {
-    connection.query('UPDATE orders SET status = ? WHERE id = ?', [req.body.status, req.params.id], (err) => {
+    const status = req.body.status;
+    connection.query('UPDATE orders SET status = ? WHERE id = ?', [status, req.params.id], (err) => {
+        if (!err) {
+            // Fulfill Feature 3 (Delivery Status Automation)
+            // Query order's phone number to send status update message!
+            connection.query('SELECT phone FROM orders WHERE id = ?', [req.params.id], (err, results) => {
+                if (results && results.length > 0) {
+                    const phone = results[0].phone;
+                    whatsappService.sendDeliveryStatusUpdate(phone, req.params.id, status);
+                }
+            });
+        }
         res.json({ message: 'Updated' });
     });
 });
+
 
 app.listen(5000, () => console.log('Server on 5000'));

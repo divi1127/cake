@@ -26,36 +26,23 @@ export default function Checkout() {
     }
 
     setLoading(true);
-    try {
-      const user = JSON.parse(localStorage.getItem('bakery_user') || '{}');
-      const orderData = {
-        user_id: user.id || null,
-        customer_name: formData.name,
-        phone: formData.phone,
-        address: formData.address,
-        delivery_method: deliveryMethod,
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      const orders = JSON.parse(localStorage.getItem('bakery_orders') || '[]');
+      const newOrder = {
+        id: Math.floor(Math.random() * 10000),
+        items: cart,
         total_amount: total,
-        items: cart
+        status: 'pending',
+        created_at: new Date().toISOString()
       };
-
-      const response = await fetch('http://localhost:5000/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setOrderPlaced(true);
-        clearCart();
-      } else {
-        alert('Failed to place order. Please try again.');
-      }
-    } catch (err) {
-      alert('Connection error. Is the backend running?');
-    } finally {
+      localStorage.setItem('bakery_orders', JSON.stringify([...orders, newOrder]));
+      
+      setOrderPlaced(true);
+      clearCart();
       setLoading(false);
-    }
+    }, 2000);
   };
 
   if (orderPlaced) {

@@ -12,16 +12,21 @@ import Checkout from './pages/Checkout';
 import Dashboard from './pages/Dashboard';
 
 import { ShopProvider } from './context/ShopContext';
+import ScrollToTop from './components/common/ScrollToTop';
+import Notification from './components/common/Notification';
 
 import Products from './pages/Products';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
+import Profile from './pages/Profile';
 
 function App() {
   return (
     <ShopProvider>
       <Router>
+        <ScrollToTop />
+        <Notification />
       <div className="flex flex-col min-h-screen">
         <Navbar />
         <main className="flex-grow">
@@ -38,6 +43,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </main>
         <Footer />

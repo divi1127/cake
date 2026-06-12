@@ -5,25 +5,38 @@ import { useShop } from '../context/ShopContext';
 import chocoTruffle from '../assets/choco-truffle.png';
 import redVelvet from '../assets/red-velvet.png';
 
+import { useParams } from 'react-router-dom';
+import { getProductById } from '../utils/productsData';
+
 export default function ProductDetails() {
+  const { id } = useParams();
+  const [product, setProduct] = useState(null);
   const [selectedWeight, setSelectedWeight] = useState('1 KG');
   const [quantity, setQuantity] = useState(1);
   const [selectedFlavor, setSelectedFlavor] = useState('Classic Chocolate');
   const [isEggless, setIsEggless] = useState(false);
   const { addToCart, toggleWishlist, isInWishlist } = useShop();
 
-  const basePrice = 650;
-  const [price, setPrice] = useState(basePrice);
+  const [price, setPrice] = useState(0);
 
   const weights = ['0.5 KG', '1 KG', '2 KG', '3 KG', 'Custom'];
-  const flavors = ['Classic Chocolate', 'Dark Truffle', 'Milk Chocolate', 'Hazelnut'];
+
+  useState(() => {
+    const foundProduct = getProductById(id);
+    if (foundProduct) {
+      setProduct(foundProduct);
+      setPrice(foundProduct.price);
+      setSelectedFlavor(foundProduct.flavor || 'Classic Chocolate');
+    }
+  }, [id]);
 
   const updatePrice = (weight) => {
+    if (!product) return;
     let multiplier = 1;
     if (weight === '0.5 KG') multiplier = 0.6;
     if (weight === '2 KG') multiplier = 1.8;
     if (weight === '3 KG') multiplier = 2.5;
-    setPrice(Math.round(basePrice * multiplier));
+    setPrice(Math.round(product.price * multiplier));
   };
 
   const handleWeightSelect = (w) => {
@@ -32,17 +45,22 @@ export default function ProductDetails() {
   };
 
   const handleAddToCart = () => {
+    if (!product) return;
     addToCart({
-      id: 1, // Static for now, would be dynamic
-      name: 'Royal Chocolate Truffle',
+      ...product,
       price: price,
-      image: chocoTruffle,
       weight: selectedWeight,
       quantity: quantity,
       flavor: selectedFlavor,
       eggless: isEggless
     });
   };
+
+  if (!product) return (
+    <div className="pt-32 pb-24 flex justify-center items-center min-h-screen">
+      <div className="w-12 h-12 border-4 border-bakery-pink-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
 
   return (
     <div className="pt-32 pb-24 bg-white min-h-screen">
@@ -56,8 +74,8 @@ export default function ProductDetails() {
               className="aspect-square bg-bakery-pink-50 rounded-[50px] overflow-hidden flex items-center justify-center p-12 border border-bakery-pink-100 shadow-2xl shadow-bakery-pink-100/50"
             >
               <img 
-                src={chocoTruffle} 
-                alt="Product" 
+                src={product.image} 
+                alt={product.name} 
                 className="w-full h-full object-contain hover:scale-110 transition-transform duration-700 cursor-zoom-in"
               />
             </motion.div>
@@ -69,16 +87,19 @@ export default function ProductDetails() {
               <div className="flex items-center gap-4 mb-4">
                 <span className="px-3 py-1 bg-bakery-pink-100 text-bakery-pink-600 rounded-full text-xs font-bold uppercase tracking-wider">Best Seller</span>
                 <div className="flex text-bakery-gold-500">
-                  {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={16} fill="currentColor" />)}
-                  <span className="ml-2 text-sm font-bold text-bakery-chocolate">(128 Reviews)</span>
+                  {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={16} fill={i <= Math.floor(product.rating) ? "currentColor" : "none"} />)}
+                  <span className="ml-2 text-sm font-bold text-bakery-chocolate">({product.rating} Rating)</span>
                 </div>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-bakery-chocolate mb-4">Royal Chocolate Truffle</h1>
-              <p className="text-3xl font-bold text-bakery-pink-600">₹{price}.00</p>
+              <h1 className="text-4xl md:text-5xl font-bold text-bakery-chocolate mb-4">{product.name}</h1>
+              <div className="flex items-baseline gap-2">
+                <p className="text-3xl font-bold text-bakery-pink-600">₹{price}.00</p>
+                {selectedWeight !== '1 KG' && <p className="text-sm text-bakery-chocolate/40 line-through">₹{product.price}</p>}
+              </div>
             </div>
 
             <p className="text-bakery-chocolate/60 leading-relaxed">
-              Experience the ultimate chocolate indulgence with our signature Royal Chocolate Truffle. Layers of moist cocoa sponge filled with silken dark chocolate ganache and finished with a mirror glaze.
+              {product.desc || 'Experience the ultimate indulgence with our freshly baked delights, crafted with the finest ingredients and love.'}
             </p>
 
             {/* Selection Options */}
@@ -102,20 +123,22 @@ export default function ProductDetails() {
               </div>
 
               {/* Flavor */}
-              <div>
-                <h3 className="font-bold text-bakery-chocolate mb-4">Select Flavor</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {flavors.map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => setSelectedFlavor(f)}
-                      className={`px-4 py-3 rounded-xl text-sm font-medium text-left border transition-all ${selectedFlavor === f ? 'border-bakery-pink-500 bg-bakery-pink-50/50' : 'border-bakery-pink-100 hover:border-bakery-pink-300'}`}
-                    >
-                      {f}
-                    </button>
-                  ))}
+              {(product.availableFlavors && product.availableFlavors.length > 0) && (
+                <div>
+                  <h3 className="font-bold text-bakery-chocolate mb-4">Select Flavor</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {product.availableFlavors.map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => setSelectedFlavor(f)}
+                        className={`px-4 py-3 rounded-xl text-sm font-medium text-left border transition-all ${selectedFlavor === f ? 'border-bakery-pink-500 bg-bakery-pink-50/50' : 'border-bakery-pink-100 hover:border-bakery-pink-300'}`}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Options */}
               <div className="flex gap-6 items-center">
@@ -153,10 +176,10 @@ export default function ProductDetails() {
                 <ShoppingCart size={20} /> Add to Cart
               </button>
               <button 
-                onClick={() => toggleWishlist({ id: 1, name: 'Royal Chocolate Truffle', price, image: chocoTruffle })}
-                className={`h-14 w-14 flex items-center justify-center border-2 rounded-full transition-all ${isInWishlist(1) ? 'bg-bakery-pink-500 border-bakery-pink-500 text-white' : 'border-bakery-pink-100 text-bakery-chocolate hover:text-bakery-pink-500 hover:border-bakery-pink-500'}`}
+                onClick={() => toggleWishlist(product)}
+                className={`h-14 w-14 flex items-center justify-center border-2 rounded-full transition-all ${isInWishlist(product.id) ? 'bg-bakery-pink-500 border-bakery-pink-500 text-white' : 'border-bakery-pink-100 text-bakery-chocolate hover:text-bakery-pink-500 hover:border-bakery-pink-500'}`}
               >
-                <Heart size={24} fill={isInWishlist(1) ? "currentColor" : "none"} />
+                <Heart size={24} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
               </button>
             </div>
 

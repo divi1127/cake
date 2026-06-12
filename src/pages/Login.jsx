@@ -1,32 +1,35 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, UserPlus } from 'lucide-react';
+import { Mail, Lock, ArrowRight, UserPlus, Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await response.json();
-      if (data.token) {
-        localStorage.setItem('bakery_token', data.token);
-        localStorage.setItem('bakery_user', JSON.stringify(data.user));
-        if (data.user.role === 'admin') navigate('/admin');
-        else navigate('/dashboard');
-      } else {
-        alert(data.error || 'Login failed');
-      }
-    } catch (err) {
-      alert('Server error. Make sure backend is running.');
+
+    // Default admin for testing
+    if (email === 'admin@cake.com' && password === 'admin123') {
+      const adminUser = { id: 0, name: 'Admin User', email: 'admin@cake.com', role: 'admin' };
+      localStorage.setItem('bakery_user', JSON.stringify(adminUser));
+      localStorage.setItem('bakery_token', 'simulated_token');
+      navigate('/admin');
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('bakery_all_users') || '[]');
+    const user = users.find(u => u.email === email && u.password === password);
+
+    if (user) {
+      localStorage.setItem('bakery_user', JSON.stringify(user));
+      localStorage.setItem('bakery_token', 'simulated_token');
+      navigate('/dashboard');
+    } else {
+      alert('Invalid email or password!');
     }
   };
 
@@ -63,13 +66,20 @@ export default function Login() {
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-bakery-chocolate/30" size={18} />
               <input 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••" 
-                className="w-full bg-bakery-cream-50 border border-bakery-pink-100 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-bakery-pink-400" 
+                className="w-full bg-bakery-cream-50 border border-bakery-pink-100 rounded-xl py-3 pl-12 pr-12 focus:outline-none focus:border-bakery-pink-400" 
                 required
               />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-bakery-chocolate/30 hover:text-bakery-chocolate/60 transition-colors focus:outline-none"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 

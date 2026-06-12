@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Camera, Heart, Star, Palette, Layers, Cake, MapPin, Send, ChevronRight, Plus } from 'lucide-react';
+import { Calendar, Camera, Heart, Star, Palette, Layers, Cake, MapPin, Send, ChevronRight, Plus, CheckCircle } from 'lucide-react';
 
 export default function CustomPreorder() {
   const [step, setStep] = useState(1);
@@ -20,6 +20,42 @@ export default function CustomPreorder() {
 
   const nextStep = () => setStep(s => s + 1);
   const prevStep = () => setStep(s => s - 1);
+
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const preorders = JSON.parse(localStorage.getItem('bakery_preorders') || '[]');
+    const newPreorder = {
+      id: Date.now(),
+      ...formData,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    };
+    localStorage.setItem('bakery_preorders', JSON.stringify([...preorders, newPreorder]));
+    setSubmitted(true);
+  };
+
+  if (submitted) {
+    return (
+      <div className="pt-32 pb-24 bg-bakery-cream-50 min-h-screen flex items-center justify-center px-4">
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-white rounded-[50px] p-12 text-center max-w-lg shadow-2xl shadow-bakery-pink-100/50 w-full"
+        >
+          <div className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8">
+            <CheckCircle size={64} />
+          </div>
+          <h1 className="text-4xl font-serif font-bold text-bakery-chocolate mb-4">Request Sent!</h1>
+          <p className="text-bakery-chocolate/60 mb-8 leading-relaxed">
+            Your custom cake request has been sent to our master chefs. We'll review the details and get back to you within 24 hours.
+          </p>
+          <button className="btn-primary w-full py-4 text-lg" onClick={() => window.location.href = '/dashboard'}>Go to Dashboard</button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-32 pb-24 bg-bakery-cream-50 min-h-screen">
@@ -208,7 +244,7 @@ export default function CustomPreorder() {
 
                 <div className="flex justify-between pt-8">
                   <button onClick={prevStep} className="btn-secondary px-10">Back</button>
-                  <button className="btn-primary flex items-center gap-2 px-10">
+                  <button onClick={handleSubmit} className="btn-primary flex items-center gap-2 px-10">
                     Submit Request <Send size={20} />
                   </button>
                 </div>

@@ -89,7 +89,7 @@ export default function Navbar() {
             <Search size={20} />
           </button>
           
-          <Link to="/dashboard" className="relative p-2 text-bakery-chocolate hover:text-bakery-pink-500 transition-colors">
+          <Link to="/dashboard?tab=wishlist" className="relative p-2 text-bakery-chocolate hover:text-bakery-pink-500 transition-colors">
             <Heart size={22} />
             {wishlist.length > 0 && (
               <span className="absolute top-1 right-1 bg-bakery-chocolate text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
@@ -135,7 +135,7 @@ export default function Navbar() {
                       <p className="text-xs font-bold text-bakery-chocolate/40 uppercase tracking-widest">Account</p>
                     </div>
                     <div className="p-2">
-                      <Link to="/dashboard" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-bakery-chocolate hover:bg-bakery-pink-50 transition-colors">
+                      <Link to="/dashboard?tab=profile" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-bakery-chocolate hover:bg-bakery-pink-50 transition-colors">
                         <User size={18} /> My Profile
                       </Link>
                       {user.role === 'admin' && (

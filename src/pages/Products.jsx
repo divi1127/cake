@@ -24,6 +24,8 @@ const productsData = {
   ],
 };
 
+import { getProductsByCategory } from '../utils/productsData';
+
 export default function Products() {
   const { categorySlug } = useParams();
   const [products, setProducts] = useState([]);
@@ -31,16 +33,10 @@ export default function Products() {
   const { addToCart, toggleWishlist, isInWishlist } = useShop();
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/products/${categorySlug}`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setProducts(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching products:', err);
-        setLoading(false);
-      });
+    // Using static data helper instead of API
+    const data = getProductsByCategory(categorySlug);
+    setProducts(data);
+    setLoading(false);
   }, [categorySlug]);
 
   const categoryName = categorySlug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -95,13 +91,22 @@ export default function Products() {
                     <div className="absolute inset-0 bg-bakery-chocolate/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                       <button 
                         onClick={() => toggleWishlist(product)}
-                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${isInWishlist(product.id) ? 'bg-bakery-pink-500 text-white' : 'bg-white text-bakery-chocolate hover:bg-bakery-pink-500 hover:text-white'}`}
+                        className={`w-12 h-12 rounded-full flex flex-col items-center justify-center transition-all ${isInWishlist(product.id) ? 'bg-bakery-pink-500 text-white' : 'bg-white text-bakery-chocolate hover:bg-bakery-pink-500 hover:text-white'}`}
                       >
                         <Heart size={20} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
+                        <span className="text-[8px] font-bold uppercase tracking-tighter mt-0.5">Wish</span>
                       </button>
-                      <Link to={`/product/${product.id}`} className="w-12 h-12 rounded-full bg-white text-bakery-chocolate flex items-center justify-center hover:bg-bakery-pink-500 hover:text-white transition-all">
+                      <Link to={`/product/${product.id}`} className="w-12 h-12 rounded-full bg-white text-bakery-chocolate flex flex-col items-center justify-center hover:bg-bakery-pink-500 hover:text-white transition-all group/eye">
                         <Eye size={20} />
+                        <span className="text-[8px] font-bold uppercase tracking-tighter mt-0.5">View</span>
                       </Link>
+                      <button 
+                        onClick={() => addToCart({...product, weight: '1 KG'})}
+                        className="w-12 h-12 rounded-full bg-white text-bakery-chocolate flex flex-col items-center justify-center hover:bg-bakery-pink-500 hover:text-white transition-all group/cart"
+                      >
+                        <ShoppingCart size={20} />
+                        <span className="text-[8px] font-bold uppercase tracking-tighter mt-0.5">Cart</span>
+                      </button>
                     </div>
                   </div>
 

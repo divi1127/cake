@@ -32,26 +32,19 @@ const staticCategories = [
   { id: 4, name: 'Jar Cakes', price: 150, desc: 'Layered jar desserts in glass.', image: chocoTruffle, count: 14, type: 'Mini' },
 ];
 
+import { categories as staticCategoriesData } from '../utils/productsData';
+
 export default function Categories() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState(staticCategoriesData);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
   const { addToCart, toggleWishlist, isInWishlist } = useShop();
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/categories')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) setCategories(data);
-        else setCategories(staticCategories);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching categories, using fallback:', err);
-        setCategories(staticCategories);
-        setLoading(false);
-      });
+    // We are now using static data by default for "without backend" requirement
+    setCategories(staticCategoriesData);
+    setLoading(false);
   }, []);
 
   const filteredCategories = categories.filter(cat => {
@@ -144,12 +137,6 @@ export default function Categories() {
                       >
                         <Heart size={20} fill={isInWishlist(cat.id) ? "currentColor" : "none"} />
                       </button>
-                      <button 
-                        onClick={(e) => { e.preventDefault(); addToCart({...cat, weight: '1 KG'}); }}
-                        className="w-12 h-12 rounded-full bg-white text-bakery-chocolate flex items-center justify-center hover:bg-bakery-pink-500 hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 delay-75"
-                      >
-                        <ShoppingCart size={20} />
-                      </button>
                     </div>
                   </div>
 
@@ -172,7 +159,7 @@ export default function Categories() {
 
                   {/* Button */}
                   <Link 
-                    to={`/products/${cat.name.toLowerCase().replace(/\s+/g, '-')}`}
+                    to={`/products/${cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')}`}
                     className="mt-8 w-full py-4 bg-bakery-pink-50 group-hover:bg-bakery-pink-500 group-hover:text-white text-bakery-chocolate font-bold rounded-2xl transition-all flex items-center justify-center gap-2"
                   >
                     View Products <ChevronRight size={18} />
