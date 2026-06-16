@@ -41,7 +41,7 @@ export default function Footer() {
                 { name: 'Categories', path: '/categories' },
                 { name: 'Custom Cakes', path: '/custom-preorder' },
                 { name: 'About Us', path: '/about' },
-                { name: 'Contact', path: '/about' },
+                { name: 'Contact', path: '/contact' },
               ].map((link) => (
                 <li key={link.name}>
                   <Link 

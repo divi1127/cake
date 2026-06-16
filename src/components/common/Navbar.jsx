@@ -51,6 +51,7 @@ export default function Navbar() {
     { name: 'Categories', path: '/categories' },
     { name: 'Custom Cake', path: '/custom-preorder' },
     { name: 'About', path: '/about' },
+    { name: 'Contact', path: '/contact' },
   ];
 
   return (
