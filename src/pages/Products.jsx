@@ -88,7 +88,7 @@ export default function Products() {
                   <div className="relative aspect-square rounded-[30px] overflow-hidden bg-bakery-pink-50 flex items-center justify-center p-6 mb-6">
                     <img src={product.image_url || product.image || (product.name.toLowerCase().includes('velvet') ? redVelvet : chocoTruffle)} alt={product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                     
-                    <div className="absolute inset-0 bg-bakery-chocolate/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                    <div className="absolute inset-0 bg-bakery-chocolate/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 md:opacity-0 sm:opacity-100">
                       <button 
                         onClick={() => toggleWishlist(product)}
                         className={`w-12 h-12 rounded-full flex flex-col items-center justify-center transition-all ${isInWishlist(product.id) ? 'bg-bakery-pink-500 text-white' : 'bg-white text-bakery-chocolate hover:bg-bakery-pink-500 hover:text-white'}`}

@@ -11,8 +11,10 @@ export default function CustomPreorder() {
     flavor: '',
     weight: '1 KG',
     theme: '',
-    instructions: ''
+    instructions: '',
+    color: ''
   });
+  const [uploadedImage, setUploadedImage] = useState(null);
 
   const eventTypes = ['Birthday', 'Wedding', 'Anniversary', 'Baby Shower', 'Corporate', 'Engagement'];
   const shapes = ['Round', 'Square', 'Heart', 'Tier Cake'];
@@ -190,7 +192,8 @@ export default function CustomPreorder() {
                     {colors.map((c) => (
                       <button 
                         key={c}
-                        className="w-12 h-12 rounded-full border-2 border-white shadow-sm hover:scale-110 transition-transform"
+                        onClick={() => setFormData({...formData, color: c})}
+                        className={`w-12 h-12 rounded-full border-2 shadow-sm hover:scale-110 transition-transform ${formData.color === c ? 'border-bakery-pink-500 scale-110' : 'border-white'}`}
                         style={{ backgroundColor: c }}
                       />
                     ))}
@@ -198,6 +201,9 @@ export default function CustomPreorder() {
                       <Plus size={20} />
                     </button>
                   </div>
+                  {formData.color && (
+                    <p className="mt-3 text-sm text-bakery-chocolate/70">Selected color: <span className="inline-block w-4 h-4 rounded-full ml-1 align-middle" style={{ backgroundColor: formData.color }}></span></p>
+                  )}
                 </div>
 
                 <div className="flex justify-between pt-8">
@@ -233,11 +239,47 @@ export default function CustomPreorder() {
                       ></textarea>
                     </div>
                     
-                    <div className="p-10 bg-bakery-pink-50 rounded-[30px] border-2 border-dashed border-bakery-pink-200 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-bakery-pink-100 transition-colors">
-                      <Camera className="text-bakery-pink-500 mb-4 group-hover:scale-110 transition-transform" size={48} />
-                      <h3 className="text-lg font-bold text-bakery-chocolate">Upload Inspiration Image</h3>
-                      <p className="text-bakery-chocolate/60 max-w-xs mt-2">Have a photo of a cake you love? Upload it here and we'll recreate it for you.</p>
-                      <button className="mt-4 px-6 py-2 bg-white rounded-full text-sm font-bold text-bakery-pink-600 shadow-sm">Browse Files</button>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-bakery-chocolate/70">Upload Inspiration Image</label>
+                      <div 
+                        onClick={() => document.getElementById('imageUpload').click()}
+                        className={`p-10 bg-bakery-pink-50 rounded-[30px] border-2 border-dashed border-bakery-pink-200 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-bakery-pink-100 transition-colors ${uploadedImage ? 'p-4' : 'p-10'}`}
+                      >
+                        {uploadedImage ? (
+                          <div className="relative">
+                            <img src={uploadedImage} alt="Uploaded" className="max-h-48 rounded-2xl" />
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setUploadedImage(null); }}
+                              className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <Camera className="text-bakery-pink-500 mb-4 group-hover:scale-110 transition-transform" size={48} />
+                            <h3 className="text-lg font-bold text-bakery-chocolate">Upload Inspiration Image</h3>
+                            <p className="text-bakery-chocolate/60 max-w-xs mt-2">Have a photo of a cake you love? Upload it here and we'll recreate it for you.</p>
+                            <button className="mt-4 px-6 py-2 bg-white rounded-full text-sm font-bold text-bakery-pink-600 shadow-sm">Browse Files</button>
+                          </>
+                        )}
+                      </div>
+                      <input 
+                        type="file"
+                        id="imageUpload"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setUploadedImage(reader.result);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
