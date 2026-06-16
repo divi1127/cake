@@ -6,7 +6,7 @@ import { Cake, Gift, Heart, Clock, Truck, ShieldCheck, Star } from 'lucide-react
 
 export default function Home() {
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden pb-24 md:pb-0">
       <Hero />
       
       {/* Features Bar */}

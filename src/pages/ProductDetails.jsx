@@ -74,7 +74,7 @@ export default function ProductDetails() {
               className="aspect-square bg-bakery-pink-50 rounded-[50px] overflow-hidden flex items-center justify-center p-12 border border-bakery-pink-100 shadow-2xl shadow-bakery-pink-100/50"
             >
               <img 
-                src={product.image} 
+                src={product.image_url || product.image || (product.name.toLowerCase().includes('velvet') ? redVelvet : chocoTruffle)} 
                 alt={product.name} 
                 className="w-full h-full object-contain hover:scale-110 transition-transform duration-700 cursor-zoom-in"
               />

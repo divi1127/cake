@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, X, Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Facebook, Instagram, X, Mail, Phone, MapPin, Send, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -26,6 +26,9 @@ export default function Footer() {
                   <Icon size={20} />
                 </a>
               ))}
+              <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center hover:bg-green-500 transition-colors">
+                <MessageCircle size={20} />
+              </a>
             </div>
           </div>
 

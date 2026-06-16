@@ -151,7 +151,7 @@ export default function Categories() {
                         <span className="ml-1 text-xs font-bold text-bakery-chocolate">4.9</span>
                       </div>
                     </div>
-                    <p className="text-bakery-pink-600 font-bold text-lg">₹{cat.price}</p>
+                    <p className="text-bakery-pink-600 font-bold text-lg">from ₹{cat.price}</p>
                     <p className="text-bakery-chocolate/60 text-sm leading-relaxed line-clamp-2">
                       {cat.desc}
                     </p>

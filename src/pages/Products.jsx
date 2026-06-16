@@ -86,7 +86,7 @@ export default function Products() {
               >
                 <div className="bg-white rounded-[40px] p-6 shadow-xl shadow-bakery-pink-100/20 card-hover flex flex-col h-full border border-bakery-pink-50">
                   <div className="relative aspect-square rounded-[30px] overflow-hidden bg-bakery-pink-50 flex items-center justify-center p-6 mb-6">
-                    <img src={product.image_url || (product.name.toLowerCase().includes('velvet') ? redVelvet : chocoTruffle)} alt={product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
+                    <img src={product.image_url || product.image || (product.name.toLowerCase().includes('velvet') ? redVelvet : chocoTruffle)} alt={product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                     
                     <div className="absolute inset-0 bg-bakery-chocolate/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                       <button 

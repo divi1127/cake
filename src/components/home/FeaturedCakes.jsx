@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Heart, Eye, Star } from 'lucide-react';
+import { Heart, Star, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useShop } from '../../context/ShopContext';
 import chocoTruffle from '../../assets/choco-truffle.png';
 import redVelvet from '../../assets/red-velvet.png';
@@ -27,7 +28,7 @@ const cakes = [
     name: 'Golden Vanilla Bliss',
     price: 450,
     rating: 4.7,
-    image: chocoTruffle, // Placeholder
+    image: 'https://i.pinimg.com/1200x/d5/8f/cc/d58fcc4079867dbf841cb40c501a4a64.jpg',
     category: 'Classic'
   },
   {
@@ -35,7 +36,7 @@ const cakes = [
     name: 'Berry White Forest',
     price: 550,
     rating: 4.9,
-    image: redVelvet, // Placeholder
+    image: 'https://i.pinimg.com/1200x/cc/95/82/cc958282b61c2d5e98c2a7cc23b60949.jpg',
     category: 'Trending'
   }
 ];
@@ -53,7 +54,7 @@ export default function FeaturedCakes() {
               Explore our hand-picked selection of the most loved cakes, crafted with precision and passion to make your moments unforgettable.
             </p>
           </div>
-          <button className="text-bakery-pink-500 font-bold hover:underline">View All Products</button>
+          <Link to="/categories" className="text-bakery-pink-500 font-bold hover:underline">View All Products</Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -80,18 +81,6 @@ export default function FeaturedCakes() {
                     {cake.category}
                   </div>
 
-                  {/* Actions Overlay */}
-                  <div className="absolute inset-0 bg-bakery-chocolate/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
-                    <button 
-                      onClick={() => toggleWishlist(cake)}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all transform translate-y-4 group-hover:translate-y-0 duration-300 ${isInWishlist(cake.id) ? 'bg-bakery-pink-500 text-white' : 'bg-white text-bakery-chocolate hover:bg-bakery-pink-400 hover:text-white'}`}
-                    >
-                      <Heart size={18} fill={isInWishlist(cake.id) ? "currentColor" : "none"} />
-                    </button>
-                    <button className="w-10 h-10 rounded-full bg-white text-bakery-chocolate flex items-center justify-center hover:bg-bakery-pink-400 hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-300 delay-75">
-                      <Eye size={18} />
-                    </button>
-                  </div>
                 </div>
 
                 {/* Content */}
@@ -101,15 +90,9 @@ export default function FeaturedCakes() {
                     <span className="text-sm font-bold text-bakery-chocolate">{cake.rating}</span>
                   </div>
                   <h3 className="font-serif text-xl font-bold mb-2 group-hover:text-bakery-pink-500 transition-colors">{cake.name}</h3>
-                  <p className="text-2xl font-bold text-bakery-chocolate/80">₹{cake.price}</p>
+                  <p className="text-2xl font-bold text-bakery-chocolate/80">from ₹{cake.price}</p>
                 </div>
 
-                <button 
-                  onClick={() => addToCart({...cake, weight: '1 KG'})}
-                  className="mt-6 w-full btn-secondary py-3 rounded-2xl flex items-center justify-center gap-2 group-hover:bg-bakery-pink-500 group-hover:text-white group-hover:border-bakery-pink-500 transition-all"
-                >
-                  <ShoppingCart size={18} /> Add to Cart
-                </button>
               </div>
             </motion.div>
           ))}
